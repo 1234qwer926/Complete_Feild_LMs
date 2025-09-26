@@ -1,4 +1,3 @@
-// src/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -23,7 +22,12 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
-            await axios.post('/api/auth/logout', {}, { withCredentials: true });
+            // FIX: Hardcode the full backend URL for the logout endpoint
+            const logoutEndpoint = 'http://localhost:8081/api/auth/logout';
+            // For production, change to:
+            // const logoutEndpoint = 'https://your-real-backend-api.com/api/auth/logout';
+            
+            await axios.post(logoutEndpoint, {}, { withCredentials: true });
         } catch (error) {
             console.error("Logout API call failed, proceeding with frontend logout.", error);
         } finally {

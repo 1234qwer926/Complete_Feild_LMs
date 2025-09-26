@@ -1,4 +1,3 @@
-// src/components/AuthenticationForm/AuthenticationForm.jsx
 import { useState } from 'react';
 import {
     Anchor, Button, Checkbox, Divider, Group, Paper, PasswordInput, Stack, Text, TextInput, Alert,
@@ -8,7 +7,9 @@ import { useToggle, upperFirst } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { IconAlertCircle } from '@tabler/icons-react';
 import axios from 'axios';
-import { useAuth } from '../../AuthContext';
+import { GoogleButton } from './GoogleButton';
+import { TwitterButton } from './TwitterButton';
+import { useAuth } from '../../AuthContext'; // Make sure this path is correct
 
 export function AuthenticationForm(props) {
     const [type, toggle] = useToggle(['login', 'register']);
@@ -30,21 +31,28 @@ export function AuthenticationForm(props) {
         setLoading(true);
         setError(null);
 
-        const endpoint = `/api/auth/${type}`;
+        // --- FIX: Hardcode the full backend URL here ---
+        // For local development:
+        const endpoint = `http://localhost:8081/api/auth/${type}`;
+        // For production, you would change this to:
+        // const endpoint = `https://your-real-backend-api.com/api/auth/${type}`;
+        
         const payload = type === 'register'
             ? { username: values.username, email: values.email, password: values.password }
             : { username: values.username, password: values.password };
 
         try {
-            await axios.post(endpoint, payload, { withCredentials: true });
+            await axios.post(endpoint, payload, {
+                withCredentials: true,
+            });
             
-            // CRITICAL FIX: Update the global state after a successful API call.
+            // This updates the global state to toggle the UI
             login();
 
             navigate('/lmsdashboard');
         } catch (err) {
             console.error(`${type} failed:`, err);
-            const errorMessage = err.response?.data?.message || err.response?.data || `An unexpected error occurred during ${type}.`;
+            const errorMessage = err.response?.data?.message || err.response?.data || `An unexpected error occurred.`;
             setError(errorMessage);
         } finally {
             setLoading(false);
@@ -54,7 +62,7 @@ export function AuthenticationForm(props) {
     return (
         <Paper radius="md" p="lg" withBorder {...props} style={{ maxWidth: '400px', margin: 'auto', marginTop: '50px' }}>
             <Text size="lg" fw={500}>Welcome, {type} to continue</Text>
-            <Divider label="Or continue with" labelPosition="center" my="lg" />
+            {/* ... Rest of your form JSX ... */}
             <form onSubmit={form.onSubmit(handleSubmit)}>
                 <Stack>
                     {error && (
