@@ -172,3 +172,45 @@ clear all cokkies after logout
 
 Certificate generation for the user after completion of each topic
 
+update the security functions :
+                                Authorization   -done
+                                authentication  -done
+                                Ratelimitting
+                                cors            -done
+                                Sql injection   -done
+                                firewalls       --default available if we deploy in aws
+                                csrf            -done
+                                xss             -done                  
+
+
+
+Tuesday:
+stored the jwt token in the localstorage Frontend.
+Updated the Role Based Access for the user based on the group
+Authorization
+authentication
+
+Wednesday:
+created the Authentication Context to store the cokkiee globally .
+updated the Each endpoint in the frontend  based on the roles
+Meeting:Eduzen Lms 
+
+
+Thursday:
+Builded the Vitamin D camp frontend React App and backend Node App fro the Reference.
+update the login  and logout functionality.
+stored the jwt token in the cokkies from the backend.
+updated Security Functionality :xss 
+
+
+
+Friday:
+  issue:when i click on the logout the cokkies are not getting cleared from the backend .
+  Reason:issue resolved because of path --1:30min
+
+  Deployed Frontend Application on Neltliy--30min
+  Issue :Cokkies are not getting Stored in the Production frontend--Netlify
+
+
+
+

@@ -6,35 +6,34 @@ import { useLocation } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
+// Configure a default base URL for axios if you haven't already.
+// For production, this will be a relative path if you use a Netlify proxy.
+// For development, it can be the full localhost URL.
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8081';
+
 export function AuthProvider({ children }) {
     const [isLoggedIn, setIsLoggedIn] = useState(Cookies.get('isLoggedIn') === 'true');
-    const location = useLocation(); // Hook to listen to route changes
+    const location = useLocation();
 
-    // This effect re-checks the cookie every time the user navigates to a new page.
-    // This ensures the state is always in sync, even with browser back/forward.
     useEffect(() => {
         const loggedInStatus = Cookies.get('isLoggedIn') === 'true';
         if (loggedInStatus !== isLoggedIn) {
             setIsLoggedIn(loggedInStatus);
         }
-    }, [location.pathname]); // Dependency on the URL path
+    }, [location.pathname]);
 
     const login = () => {
-        // This function should be called from your AuthenticationForm after a successful API login
         setIsLoggedIn(true);
     };
 
     const logout = async () => {
         try {
-            // Clear the backend HttpOnly cookie
-            await axios.post('http://localhost:8081/api/auth/logout', {}, { withCredentials: true });
-            // Clear the frontend-readable cookie
-            Cookies.remove('isLoggedIn', { path: '/' });
-            Cookies.remove('jwt-token', { path: '/api' });
-            setIsLoggedIn(false);
+            await axios.post('/api/auth/logout', {}, { withCredentials: true });
         } catch (error) {
-            console.error("Logout failed", error);
-            // Even if the API call fails, force a frontend logout
+            console.error("Logout API call failed, proceeding with frontend logout.", error);
+        } finally {
+            // The backend is responsible for clearing the HttpOnly JWT cookie.
+            // The frontend only clears what it can access.
             Cookies.remove('isLoggedIn', { path: '/' });
             setIsLoggedIn(false);
         }
