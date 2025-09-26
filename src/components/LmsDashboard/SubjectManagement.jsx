@@ -17,6 +17,8 @@ import {
     Box
 } from '@mantine/core';
 import { IconTrash, IconEdit } from '@tabler/icons-react';
+import { IconArrowLeft, IconSchool } from '@tabler/icons-react'; // Import necessary icons
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = 'http://localhost:8081/api';
 
@@ -26,11 +28,15 @@ const SubjectManagement = () => {
     const [modalOpened, setModalOpened] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentSubjectId, setCurrentSubjectId] = useState(null);
-
+    const navigate = useNavigate();
     // Form state
     const [subjectName, setSubjectName] = useState('');
     const [groupName, setGroupName] = useState('bl');
     const [selectedCourses, setSelectedCourses] = useState([]);
+
+    const handleBack = () => {
+    navigate(-1); // This is the idiomatic way to go back in react-router
+  };
 
     const fetchSubjects = async () => {
         try {
@@ -125,6 +131,15 @@ const SubjectManagement = () => {
         <Container size="lg">
             <Group position="apart" mb="xl">
                 <Title order={2}>Subject Management</Title>
+                <Button
+                            variant="light"
+                            color="blue"
+                            size="sm"
+                            leftIcon={<IconArrowLeft size={16} />}
+                            onClick={handleBack}
+                          >
+                            Back
+                </Button>
                 <Button onClick={() => {
                     setIsEditMode(false);
                     setSubjectName('');

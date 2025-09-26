@@ -10,7 +10,8 @@ import {
   ActionIcon,
   Tooltip,
 } from "@mantine/core";
-import { IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconTrash, IconArrowLeft } from "@tabler/icons-react"; // Import the back arrow icon
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios";
 import { JotformMapping } from "./JotformMapping";
 
@@ -20,15 +21,16 @@ export function CourseManagement() {
   const [mapModalOpened, setMapModalOpened] = useState(false);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  
+  // Initialize the navigate function
+  const navigate = useNavigate();
 
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      // --- START OF UPDATE 1 ---
       const response = await axios.get(`http://localhost:8081/api/courses`, {
         withCredentials: true,
       });
-      // --- END OF UPDATE 1 ---
       setCourses(response.data);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -44,7 +46,12 @@ export function CourseManagement() {
 
   const handleEdit = (course) => {
     console.log("Editing course:", course);
-    // Logic for editing a course will go here
+    // Future logic for editing a course will go here
+  };
+  
+  // Function to navigate back
+  const handleBack = () => {
+    navigate(-1);
   };
 
   const openDeleteModal = (course) => {
@@ -61,14 +68,12 @@ export function CourseManagement() {
     if (!courseToDelete) return;
 
     try {
-      // --- START OF UPDATE 2 ---
       await axios.delete(
         `http://localhost:8081/api/courses/${courseToDelete.id}`,
         {
           withCredentials: true,
         }
       );
-      // --- END OF UPDATE 2 ---
       setCourses(courses.filter((course) => course.id !== courseToDelete.id));
       closeDeleteModal();
     } catch (error) {
@@ -83,7 +88,18 @@ export function CourseManagement() {
     <Container size="lg" py="xl">
       <Group justify="space-between" mb="md">
         <Title order={2}>Course Management</Title>
-        <Button onClick={() => setMapModalOpened(true)}>Map Jotforms</Button>
+        <Group>
+          {/* Back button added here */}
+          <Button
+            variant="light"
+            color="blue"
+            leftIcon={<IconArrowLeft size={16} />}
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          <Button onClick={() => setMapModalOpened(true)}>Map Jotforms</Button>
+        </Group>
       </Group>
 
       {loading ? (

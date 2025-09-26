@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Title, Text } from '@mantine/core';
+import { Container, Table, Title, Text, Button, Group } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { IconArrowLeft, IconSchool } from '@tabler/icons-react'; // Import necessary icons
 
 export function ResultManagement() {
   const [courses, setCourses] = useState([]);
@@ -12,11 +13,9 @@ export function ResultManagement() {
     const fetchCourseResults = async () => {
       setLoading(true);
       try {
-        // --- START OF UPDATE ---
         const response = await axios.get(`http://localhost:8081/api/results`, {
           withCredentials: true,
         });
-        // --- END OF UPDATE ---
         setCourses(response.data);
       } catch (error) {
         console.error('Error fetching results:', error);
@@ -33,9 +32,37 @@ export function ResultManagement() {
     navigate(`/user-results/${course.id}`, { state: { courseName: course.courseName } });
   };
 
+  // Function to navigate back
+  const handleBack = () => {
+    navigate(-1); // This is the idiomatic way to go back in react-router
+  };
+
   return (
     <Container size="lg" py="xl">
-      <Title order={2} mb="xl">Result Management</Title>
+      <Group justify="space-between" mb="xl">
+        <Title order={2}>Result Management</Title>
+        <Group>
+          <Button
+            variant="light"
+            color="blue"
+            size="sm"
+            leftIcon={<IconArrowLeft size={16} />}
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          <Button
+            variant="light"
+            color="grape"
+            size="sm"
+            leftIcon={<IconSchool size={16} />}
+            onClick={() => navigate("/subjectmanagement")}
+          >
+            Create Subject
+          </Button>
+        </Group>
+      </Group>
+
       {loading ? (
         <Text ta="center" c="dimmed">Loading results...</Text>
       ) : courses.length > 0 ? (

@@ -17,10 +17,13 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications"; // Import notifications
 import axios from "axios";
 import { CreateJotform } from "./CreateJotform";
+import { IconArrowLeft, IconSchool } from '@tabler/icons-react'; // Import necessary icons
+import { useNavigate } from "react-router-dom";
 
 export function JotformManagement() {
   const [jotforms, setJotforms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [createJotformModalOpened, setCreateJotformModalOpened] =
     useState(false);
 
@@ -108,6 +111,10 @@ export function JotformManagement() {
     });
   };
 
+  const handleBack = () => {
+    navigate(-1); // This is the idiomatic way to go back in react-router
+  };
+
   const rows = jotforms.map((form) => (
     <Table.Tr key={form.id}>
       <Table.Td>{form.jotformName}</Table.Td>
@@ -145,6 +152,15 @@ export function JotformManagement() {
     <Container size="lg" py="xl">
       <Group justify="space-between" mb="xl">
         <Title order={2}>Jotform Management</Title>
+        <Button
+                    variant="light"
+                    color="blue"
+                    size="sm"
+                    leftIcon={<IconArrowLeft size={16} />}
+                    onClick={handleBack}
+                  >
+                    Back
+                  </Button>
         <Button onClick={() => setCreateJotformModalOpened(true)}>
           Create Jotform
         </Button>

@@ -14,12 +14,15 @@ import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import axios from "axios";
 import { UserMapping } from "./UserMapping";
+import { IconArrowLeft, IconSchool } from '@tabler/icons-react'; // Import necessary icons
+import { useNavigate } from "react-router-dom";
 
 export function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mapModalOpened, setMapModalOpened] = useState(false);
-
+  const navigate = useNavigate();
+  
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -41,6 +44,10 @@ export function UserManagement() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const handleBack = () => {
+    navigate(-1); // This is the idiomatic way to go back in react-router
+  };
 
   const handleMapSuccess = () => {
     setMapModalOpened(false);
@@ -124,6 +131,15 @@ export function UserManagement() {
 
       <Group justify="space-between" mb="xl">
         <Title order={2}>User Management</Title>
+        <Button
+                                    variant="light"
+                                    color="blue"
+                                    size="sm"
+                                    leftIcon={<IconArrowLeft size={16} />}
+                                    onClick={handleBack}
+                                  >
+                                    Back
+                        </Button>
         <Button onClick={() => setMapModalOpened(true)}>Map User</Button>
       </Group>
 
