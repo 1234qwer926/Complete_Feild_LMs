@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Anchor, Button, Checkbox, Divider, Group, Paper, PasswordInput, Stack, Text, TextInput, Alert,
+    Anchor, Button, Checkbox, Divider, Group, Paper, PasswordInput, Stack, Text, TextInput, Alert,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useToggle, upperFirst } from '@mantine/hooks';
@@ -9,7 +9,7 @@ import { IconAlertCircle } from '@tabler/icons-react';
 import axios from 'axios';
 import { GoogleButton } from './GoogleButton';
 import { TwitterButton } from './TwitterButton';
-import { useAuth } from '../../AuthContext'; // Adjust path if necessary
+import { useAuth } from '../../AuthContext'; // Make sure this path is correct
 
 export function AuthenticationForm(props) {
     const [type, toggle] = useToggle(['login', 'register']);
@@ -17,7 +17,7 @@ export function AuthenticationForm(props) {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    // Get the login function from the global AuthContext
+    // 1. Get the login function from the global AuthContext
     const { login } = useAuth();
 
     const form = useForm({
@@ -38,7 +38,9 @@ export function AuthenticationForm(props) {
         setLoading(true);
         setError(null);
 
-        const endpoint = `http://localhost:8081/api/auth/${type}`;
+        // 2. FIX: Use a relative path for the endpoint to work with the Netlify proxy
+        const endpoint = `/api/auth/${type}`;
+        
         const payload = type === 'register'
             ? { username: values.username, email: values.email, password: values.password }
             : { username: values.username, password: values.password };
@@ -48,13 +50,13 @@ export function AuthenticationForm(props) {
                 withCredentials: true,
             });
             
-            // If the request was for login, update the global state
-            if (type === 'login' || type === 'register') {
-                login();
-            }
+            // 3. CRITICAL FIX: After a successful API call, update the global state.
+            // This will cause the HeaderMegaMenu to re-render.
+            login();
 
             // Navigate to the dashboard after success
-            navigate('/lmsdashboard'); // Changed to a more likely target
+            navigate('/lmsdashboard');
+
         } catch (err) {
             console.error(`${type} failed:`, err);
             if (err.response && err.response.data && typeof err.response.data === 'string') {
@@ -73,10 +75,10 @@ export function AuthenticationForm(props) {
                 Welcome, {type} to continue
             </Text>
 
-            <Group grow mb="md" mt="md">
+            {/* <Group grow mb="md" mt="md">
                 <GoogleButton radius="xl">Google</GoogleButton>
                 <TwitterButton radius="xl">Twitter</TwitterButton>
-            </Group>
+            </Group> */}
 
             <Divider label="Or continue with" labelPosition="center" my="lg" />
 
@@ -92,9 +94,7 @@ export function AuthenticationForm(props) {
                         required
                         label="Username"
                         placeholder="Your username"
-                        value={form.values.username}
-                        onChange={(event) => form.setFieldValue('username', event.currentTarget.value)}
-                        error={form.errors.username}
+                        {...form.getInputProps('username')}
                         radius="md"
                     />
 
@@ -103,9 +103,7 @@ export function AuthenticationForm(props) {
                             required
                             label="Email"
                             placeholder="hello@example.com"
-                            value={form.values.email}
-                            onChange={(event) => form.setFieldValue('email', event.currentTarget.value)}
-                            error={form.errors.email}
+                            {...form.getInputProps('email')}
                             radius="md"
                         />
                     )}
@@ -114,9 +112,7 @@ export function AuthenticationForm(props) {
                         required
                         label="Password"
                         placeholder="Your password"
-                        value={form.values.password}
-                        onChange={(event) => form.setFieldValue('password', event.currentTarget.value)}
-                        error={form.errors.password}
+                        {...form.getInputProps('password')}
                         radius="md"
                     />
 
@@ -124,8 +120,7 @@ export function AuthenticationForm(props) {
                         <Checkbox
                             required
                             label="I accept the terms and conditions"
-                            checked={form.values.terms}
-                            onChange={(event) => form.setFieldValue('terms', event.currentTarget.checked)}
+                            {...form.getInputProps('terms', { type: 'checkbox' })}
                         />
                     )}
                 </Stack>

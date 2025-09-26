@@ -6,15 +6,11 @@ import { useLocation } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
-// Configure a default base URL for axios if you haven't already.
-// For production, this will be a relative path if you use a Netlify proxy.
-// For development, it can be the full localhost URL.
-axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8081';
-
 export function AuthProvider({ children }) {
     const [isLoggedIn, setIsLoggedIn] = useState(Cookies.get('isLoggedIn') === 'true');
     const location = useLocation();
 
+    // This effect ensures the UI stays in sync if the user navigates with browser buttons.
     useEffect(() => {
         const loggedInStatus = Cookies.get('isLoggedIn') === 'true';
         if (loggedInStatus !== isLoggedIn) {
@@ -22,18 +18,22 @@ export function AuthProvider({ children }) {
         }
     }, [location.pathname]);
 
+    /**
+     * This function updates the application's state to reflect that the user is logged in.
+     * It MUST be called by your login form after a successful API response.
+     */
     const login = () => {
         setIsLoggedIn(true);
     };
 
     const logout = async () => {
         try {
+            // This relative path requires the Netlify proxy configuration to work in production.
             await axios.post('/api/auth/logout', {}, { withCredentials: true });
         } catch (error) {
             console.error("Logout API call failed, proceeding with frontend logout.", error);
         } finally {
-            // The backend is responsible for clearing the HttpOnly JWT cookie.
-            // The frontend only clears what it can access.
+            // The frontend clears the readable cookie; the backend clears the HttpOnly one.
             Cookies.remove('isLoggedIn', { path: '/' });
             setIsLoggedIn(false);
         }
