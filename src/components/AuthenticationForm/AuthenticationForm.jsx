@@ -1,3 +1,4 @@
+// src/components/AuthenticationForm/AuthenticationForm.jsx
 import { useState } from 'react';
 import {
     Anchor, Button, Checkbox, Divider, Group, Paper, PasswordInput, Stack, Text, TextInput, Alert,
@@ -7,24 +8,17 @@ import { useToggle, upperFirst } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { IconAlertCircle } from '@tabler/icons-react';
 import axios from 'axios';
-import { useAuth } from '../../AuthContext'; // 1. Import the useAuth hook
+import { useAuth } from '../../AuthContext';
 
 export function AuthenticationForm(props) {
     const [type, toggle] = useToggle(['login', 'register']);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-
-    // 2. Get the login function from the context
     const { login } = useAuth();
 
     const form = useForm({
-        initialValues: {
-            username: '',
-            email: '',
-            password: '',
-            terms: true,
-        },
+        initialValues: { username: '', email: '', password: '', terms: true },
         validate: {
             username: (val) => (val.length > 0 ? null : 'Username is required'),
             email: (val) => (type === 'register' && /^\S+@\S+$/.test(val) ? null : (type === 'register' ? 'Invalid email' : null)),
@@ -36,31 +30,22 @@ export function AuthenticationForm(props) {
         setLoading(true);
         setError(null);
 
-        // Use a relative path for the endpoint to work with the Netlify proxy
         const endpoint = `/api/auth/${type}`;
-        
         const payload = type === 'register'
             ? { username: values.username, email: values.email, password: values.password }
             : { username: values.username, password: values.password };
 
         try {
-            await axios.post(endpoint, payload, {
-                withCredentials: true,
-            });
+            await axios.post(endpoint, payload, { withCredentials: true });
             
-            // 3. CRITICAL FIX: After the API call succeeds, update the global state.
+            // CRITICAL FIX: Update the global state after a successful API call.
             login();
 
-            // Navigate to the dashboard after success
             navigate('/lmsdashboard');
-
         } catch (err) {
             console.error(`${type} failed:`, err);
-            if (err.response && err.response.data && typeof err.response.data === 'string') {
-                setError(err.response.data);
-            } else {
-                setError(`An unexpected error occurred during ${type}. Please try again.`);
-            }
+            const errorMessage = err.response?.data?.message || err.response?.data || `An unexpected error occurred during ${type}.`;
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -68,16 +53,39 @@ export function AuthenticationForm(props) {
 
     return (
         <Paper radius="md" p="lg" withBorder {...props} style={{ maxWidth: '400px', margin: 'auto', marginTop: '50px' }}>
-            {/* ... Rest of your form JSX ... */}
+            <Text size="lg" fw={500}>Welcome, {type} to continue</Text>
+            <Divider label="Or continue with" labelPosition="center" my="lg" />
             <form onSubmit={form.onSubmit(handleSubmit)}>
                 <Stack>
-                    {/* ... form fields ... */}
+                    {error && (
+                        <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
+                            {error}
+                        </Alert>
+                    )}
+                    <TextInput
+                        required label="Username" placeholder="Your username"
+                        {...form.getInputProps('username')} radius="md"
+                    />
+                    {type === 'register' && (
+                        <TextInput
+                            required label="Email" placeholder="hello@example.com"
+                            {...form.getInputProps('email')} radius="md"
+                        />
+                    )}
+                    <PasswordInput
+                        required label="Password" placeholder="Your password"
+                        {...form.getInputProps('password')} radius="md"
+                    />
+                    {type === 'register' && (
+                        <Checkbox
+                            required label="I accept the terms and conditions"
+                            {...form.getInputProps('terms', { type: 'checkbox' })}
+                        />
+                    )}
                 </Stack>
                 <Group justify="space-between" mt="xl">
                     <Anchor component="button" type="button" c="dimmed" onClick={() => { toggle(); setError(null); }} size="xs">
-                        {type === 'register'
-                            ? 'Already have an account? Login'
-                            : "Don't have an account? Register"}
+                        {type === 'register' ? 'Already have an account? Login' : "Don't have an account? Register"}
                     </Anchor>
                     <Button type="submit" radius="xl" loading={loading}>
                         {upperFirst(type)}
