@@ -1,0 +1,24 @@
+# This file goes in the root of your project.
+
+# This section tells Netlify how to build your React app.
+# It should match what you have in your Netlify UI.
+[build]
+  command = "npm run build"
+  publish = "dist" # Your settings show 'dist' as the publish directory. Use "build" if using create-react-app.
+
+# This is the proxy rule to fix the third-party cookie issue.
+# It forwards requests from your Netlify site to your backend API.
+[[redirects]]
+  from = "/api/*"
+  # IMPORTANT: Replace this with the actual URL of your deployed backend.
+  to = "https://your-real-backend-api.com/api/:splat"
+  status = 200 # This makes it a "rewrite" or proxy.
+  force = true
+
+# This is a standard rule for Single Page Applications (like React).
+# It ensures that refreshing the page on a route like /lmsdashboard
+# still loads your React app correctly.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
