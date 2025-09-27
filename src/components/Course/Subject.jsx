@@ -4,6 +4,7 @@ import { IconArrowRight } from '@tabler/icons-react';
 import axios from 'axios'; // Import axios directly
 import { CourseDetail } from './CourseDetail';
 import { CourseCard } from './CourseCard';
+import { useAuth } from '../../AuthContext';
 
 export function Subject() {
   const [subjects, setSubjects] = useState([]);
@@ -14,8 +15,14 @@ export function Subject() {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
   // This should be fetched from user context later
-  const group = 'bl';
+  // --- START OF CHANGE ---
+  // Get the logged-in user from the global AuthContext
+  const { user } = useAuth();
 
+  // Dynamically get the group name from the user object.
+  // The '??' provides a fallback to an empty string if user or groupName is null/undefined.
+  const group = user?.groupName ?? '';
+  // --- END OF CHANGE ---
   useEffect(() => {
     const fetchSubjects = async () => {
       setLoading(true);

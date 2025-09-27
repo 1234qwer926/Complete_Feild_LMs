@@ -24,6 +24,7 @@ import FileUploadComponent from './components/FileUpload';
 import GeminiChatModal from './components/GeminiChatModal';
 import SubjectManagement from './components/LmsDashboard/SubjectManagement';
 import { Subject } from './components/Course/Subject';
+import { UpdateProfilePage } from './components/LmsDashboard/UpdateProfilePage';
 
 import './App.css';
 
@@ -56,7 +57,8 @@ function App() {
         <Route path="/fileupload" element={<FileUploadComponent />} />
         <Route path="/chatmodal" element={<GeminiChatModal />} />
         <Route path="/subjectmanagement" element={<SubjectManagement />} />
-        <Route path="/subject" element={<Subject />} />
+        <Route path="/subject" element={<Subject />} /> 
+        <Route path="/update-profile" element={<UpdateProfilePage />} />
       </Routes>
       <FooterLinks />
       <GeminiChatModal />
