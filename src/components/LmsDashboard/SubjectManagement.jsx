@@ -24,16 +24,19 @@ const API_URL = 'http://localhost:8081/api';
 
 const SubjectManagement = () => {
     const [subjectsByGroup, setSubjectsByGroup] = useState({});
-    const [courses, setCourses] = useState([]);
+    const [allCourses, setAllCourses] = useState([]); // --- MODIFIED: Renamed from 'courses' for clarity
     const [modalOpened, setModalOpened] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentSubjectId, setCurrentSubjectId] = useState(null);
     const navigate = useNavigate();
 
-    // Form state - Default to 'BL'
+    // Form state
     const [subjectName, setSubjectName] = useState('');
     const [groupName, setGroupName] = useState('BL');
     const [selectedCourses, setSelectedCourses] = useState([]);
+
+    // --- NEW: State to hold only the courses available for selection ---
+    const [availableCourses, setAvailableCourses] = useState([]);
 
     const handleBack = () => {
         navigate(-1);
@@ -41,10 +44,7 @@ const SubjectManagement = () => {
 
     const fetchSubjects = async () => {
         try {
-            const response = await axios.get(`${API_URL}/subjects`, {
-                withCredentials: true,
-            });
-            // --- CHANGE: Normalize keys from backend to uppercase ---
+            const response = await axios.get(`${API_URL}/subjects`, { withCredentials: true });
             const data = response.data;
             const normalizedData = Object.keys(data).reduce((acc, key) => {
                 acc[key.toUpperCase()] = data[key];
@@ -58,10 +58,8 @@ const SubjectManagement = () => {
 
     const fetchCourses = async () => {
         try {
-            const response = await axios.get(`${API_URL}/courses`, {
-                withCredentials: true,
-            });
-            setCourses(response.data.map(course => ({
+            const response = await axios.get(`${API_URL}/courses`, { withCredentials: true });
+            setAllCourses(response.data.map(course => ({
                 value: course.id.toString(),
                 label: course.courseName,
             })));
@@ -75,6 +73,23 @@ const SubjectManagement = () => {
         fetchCourses();
     }, []);
 
+    // --- NEW: Effect to calculate which courses are available for selection ---
+    useEffect(() => {
+        // 1. Get IDs of all courses that are already mapped to any subject.
+        const mappedCourseIds = new Set();
+        Object.values(subjectsByGroup).flat().forEach(subject => {
+            // If we are NOT editing this specific subject, add its courses to the mapped list.
+            if (subject.id !== currentSubjectId) {
+                subject.courses.forEach(course => mappedCourseIds.add(course.id.toString()));
+            }
+        });
+
+        // 2. Filter the full list of courses.
+        const filtered = allCourses.filter(course => !mappedCourseIds.has(course.value));
+        setAvailableCourses(filtered);
+
+    }, [allCourses, subjectsByGroup, currentSubjectId]); // Recalculate when data changes or when edit mode starts
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const subjectData = {
@@ -85,17 +100,12 @@ const SubjectManagement = () => {
 
         try {
             if (isEditMode) {
-                await axios.put(`${API_URL}/subjects/${currentSubjectId}`, subjectData, {
-                    withCredentials: true,
-                });
+                await axios.put(`${API_URL}/subjects/${currentSubjectId}`, subjectData, { withCredentials: true });
             } else {
-                await axios.post(`${API_URL}/subjects`, subjectData, {
-                    withCredentials: true,
-                });
+                await axios.post(`${API_URL}/subjects`, subjectData, { withCredentials: true });
             }
             fetchSubjects();
             setModalOpened(false);
-            // --- CHANGE: Reset form with uppercase 'BL' ---
             setSubjectName('');
             setGroupName('BL');
             setSelectedCourses([]);
@@ -108,27 +118,33 @@ const SubjectManagement = () => {
 
     const handleEdit = (subject) => {
         setIsEditMode(true);
-        setCurrentSubjectId(subject.id);
+        setCurrentSubjectId(subject.id); // This triggers the useEffect to recalculate available courses
         setSubjectName(subject.subjectName);
-        setGroupName(subject.groupName.toUpperCase()); // Ensure it's uppercase
+        setGroupName(subject.groupName.toUpperCase());
         setSelectedCourses(subject.courses.map(course => course.id.toString()));
         setModalOpened(true);
     };
-
+    
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this subject?')) {
             try {
-                await axios.delete(`${API_URL}/subjects/${id}`, {
-                    withCredentials: true,
-                });
+                await axios.delete(`${API_URL}/subjects/${id}`, { withCredentials: true });
                 fetchSubjects();
             } catch (error) {
                 console.error('Error deleting subject:', error);
             }
         }
     };
+    
+    const handleCloseModal = () => {
+        setModalOpened(false);
+        setIsEditMode(false);
+        setCurrentSubjectId(null); // Reset current subject ID
+        setSubjectName('');
+        setGroupName('BL');
+        setSelectedCourses([]);
+    };
 
-    // --- CHANGE: Updated group labels to uppercase and added 'BE' ---
     const groupLabels = {
         BL: 'Group BL',
         BH: 'Group BH',
@@ -140,25 +156,12 @@ const SubjectManagement = () => {
         <Container size="lg">
             <Group position="apart" mb="xl">
                 <Title order={2}>Subject Management</Title>
-                <Button
-                    variant="light"
-                    color="blue"
-                    size="sm"
-                    leftIcon={<IconArrowLeft size={16} />}
-                    onClick={handleBack}
-                >
+                <Button variant="light" color="blue" size="sm" leftIcon={<IconArrowLeft size={16} />} onClick={handleBack}>
                     Back
                 </Button>
-                <Button onClick={() => {
-                    setIsEditMode(false);
-                    setSubjectName('');
-                    setGroupName('BL'); // --- CHANGE: Reset to uppercase 'BL' ---
-                    setSelectedCourses([]);
-                    setModalOpened(true);
-                }}>Map Subject</Button>
+                <Button onClick={() => setModalOpened(true)}>Map Subject</Button>
             </Group>
 
-            {/* --- CHANGE: Loop using updated uppercase groupLabels --- */}
             {Object.keys(groupLabels).map(groupKey => (
                 subjectsByGroup[groupKey] && subjectsByGroup[groupKey].length > 0 && (
                     <Box key={groupKey} mb="xl">
@@ -169,20 +172,14 @@ const SubjectManagement = () => {
                                     <Group position="apart">
                                         <Text weight={500}>{subject.subjectName}</Text>
                                         <Group>
-                                            <ActionIcon color="blue" onClick={() => handleEdit(subject)}>
-                                                <IconEdit size={16} />
-                                            </ActionIcon>
-                                            <ActionIcon color="red" onClick={() => handleDelete(subject.id)}>
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
+                                            <ActionIcon color="blue" onClick={() => handleEdit(subject)}><IconEdit size={16} /></ActionIcon>
+                                            <ActionIcon color="red" onClick={() => handleDelete(subject.id)}><IconTrash size={16} /></ActionIcon>
                                         </Group>
                                     </Group>
                                     <Text size="sm" color="dimmed" mt={4}>Courses:</Text>
                                     <Group mt={5}>
                                         {subject.courses.map(course => (
-                                            <Badge key={course.id} variant="light">
-                                                {course.courseName}
-                                            </Badge>
+                                            <Badge key={course.id} variant="light">{course.courseName}</Badge>
                                         ))}
                                     </Group>
                                 </Paper>
@@ -194,14 +191,7 @@ const SubjectManagement = () => {
 
             <Modal
                 opened={modalOpened}
-                onClose={() => {
-                    setModalOpened(false);
-                    setIsEditMode(false);
-                    setSubjectName('');
-                    setGroupName('BL'); // --- CHANGE: Reset to uppercase 'BL' ---
-                    setSelectedCourses([]);
-                    setCurrentSubjectId(null);
-                }}
+                onClose={handleCloseModal} // Use the new close handler
                 title={isEditMode ? "Edit Subject" : "Create a New Subject"}
             >
                 <form onSubmit={handleSubmit}>
@@ -216,10 +206,9 @@ const SubjectManagement = () => {
                     <Select
                         label="Group"
                         required
-                        // --- CHANGE: Updated Select data to uppercase ---
                         data={[
                             { value: 'BL', label: 'Group BL' },
-                            { value: 'BH', label: 'Group BH' },
+                            // { value: 'BH', label: 'Group BH' },
                             { value: 'BM', label: 'Group BM' },
                             { value: 'BE', label: 'Group BE' },
                         ]}
@@ -229,12 +218,13 @@ const SubjectManagement = () => {
                     />
                     <MultiSelect
                         label="Select Courses"
-                        placeholder="Pick all courses you like"
-                        data={courses}
+                        placeholder="Pick available courses"
+                        // --- MODIFIED: Use the filtered list of available courses ---
+                        data={availableCourses}
                         value={selectedCourses}
                         onChange={setSelectedCourses}
                         searchable
-                        nothingFound="Nothing found"
+                        nothingFound="No available courses"
                         mb="xl"
                     />
                     <Button type="submit" fullWidth>
@@ -247,3 +237,4 @@ const SubjectManagement = () => {
 };
 
 export default SubjectManagement;
+

@@ -179,6 +179,10 @@ clear all cokkies after logout          -done
 
 Certificate generation for the user after completion of each topic
 
+when the admin map the user then also change the user role to employee
+
+Add the Forgot password Functionality  
+
 update the security functions :
                                 Authorization   -done
                                 authentication  -done
@@ -250,10 +254,23 @@ Saturday:
   updated the code for the each userdetails in local storage and user context global state
 
   Another case --Admin Updated the usermapiing but still the user looged in to the system 
-                --then the  details are not updated in the localstorage and user context global state   for the user
-                --solution user need to relogin to the system.                                       
+                --then the  details are not updated in the localstorage and user context global state for the user
+                --solution ,user need to relogin to the system. 
 
+Monday:
 
-         
+    Issue:In Subject controller user cant able to get the data 
+          done changes group name type issue and  role based access controls  
+
+  created the coursecompletion table and related to usertable 
+  while user click on submit in the learning material the course completion table will get updated.
+  updated the controllers,service and repo layers which are related to coursecompletion modal,and also updated the frontend.
+
+  Edge cases: removed the groupname which is getting updated from the userdetails from the localstorage,where user 
+              will have list of groupnames.
+
+  One topic need not fall in multiple subjects.--done
+       
+
 
 

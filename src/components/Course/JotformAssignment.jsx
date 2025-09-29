@@ -37,6 +37,7 @@ import axios from 'axios';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import { useAuth } from '../../AuthContext';
 
 
 export function JotformAssignment() {
@@ -50,6 +51,8 @@ export function JotformAssignment() {
   // Webcam states
   const [webcamReady, setWebcamReady] = useState(false);
   const [webcamError, setWebcamError] = useState(null);
+  const { user } = useAuth();
+
 
 
   // Photo states
@@ -87,6 +90,13 @@ export function JotformAssignment() {
   const [multipleFaces, setMultipleFaces] = useState(false);
   const [lightingIssue, setLightingIssue] = useState(false);
 
+
+    const userid = user?.email ?? ''; 
+    // const { user } = useAuth();
+    
+      // Dynamically get the group name from the user object.
+      // The '??' provides a fallback to an empty string if user or groupName is null/undefined.
+      const username = user?.username ?? '';
 
   // Speech Recognition state
   const {
@@ -447,8 +457,8 @@ export function JotformAssignment() {
   // ### FULLY CORRECTED submitAssignment function ###
 const submitAssignment = async () => {
   try {
-    const username = "rahul"; // This should come from auth context
-    const userid = "user101";  
+    // const username = "rahul"; // This should come from auth context
+
 
       // 1. Prepare the JSON payload
       const submissionDto = {
@@ -684,7 +694,7 @@ const submitAssignment = async () => {
         <Center><Stack align="center">
           <IconCheck size={64} color="green" /><Title order={2}>Assignment Completed</Title>
           <Text color="dimmed">Your assignment has been submitted successfully.</Text>
-          <Button onClick={() => navigate('/dashboard')} mt="lg" size="lg">Return to Dashboard</Button>
+          <Button onClick={() => navigate('/subject')} mt="lg" size="lg">Return to Dashboard</Button>
         </Stack></Center>
       </Container>
     );
