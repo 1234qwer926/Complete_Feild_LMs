@@ -17,7 +17,7 @@ import {
     Box
 } from '@mantine/core';
 import { IconTrash, IconEdit } from '@tabler/icons-react';
-import { IconArrowLeft, IconSchool } from '@tabler/icons-react'; // Import necessary icons
+import { IconArrowLeft } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = 'http://localhost:8081/api';
@@ -29,21 +29,28 @@ const SubjectManagement = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentSubjectId, setCurrentSubjectId] = useState(null);
     const navigate = useNavigate();
-    // Form state
+
+    // Form state - Default to 'BL'
     const [subjectName, setSubjectName] = useState('');
-    const [groupName, setGroupName] = useState('bl');
+    const [groupName, setGroupName] = useState('BL');
     const [selectedCourses, setSelectedCourses] = useState([]);
 
     const handleBack = () => {
-    navigate(-1); // This is the idiomatic way to go back in react-router
-  };
+        navigate(-1);
+    };
 
     const fetchSubjects = async () => {
         try {
-            const response = await axios.get(`${API_URL}/subjects`,{
-        withCredentials: true,
-      });
-            setSubjectsByGroup(response.data);
+            const response = await axios.get(`${API_URL}/subjects`, {
+                withCredentials: true,
+            });
+            // --- CHANGE: Normalize keys from backend to uppercase ---
+            const data = response.data;
+            const normalizedData = Object.keys(data).reduce((acc, key) => {
+                acc[key.toUpperCase()] = data[key];
+                return acc;
+            }, {});
+            setSubjectsByGroup(normalizedData);
         } catch (error) {
             console.error('Error fetching subjects:', error);
         }
@@ -51,9 +58,9 @@ const SubjectManagement = () => {
 
     const fetchCourses = async () => {
         try {
-            const response = await axios.get(`${API_URL}/courses`,{
-        withCredentials: true,
-      });
+            const response = await axios.get(`${API_URL}/courses`, {
+                withCredentials: true,
+            });
             setCourses(response.data.map(course => ({
                 value: course.id.toString(),
                 label: course.courseName,
@@ -78,19 +85,19 @@ const SubjectManagement = () => {
 
         try {
             if (isEditMode) {
-                await axios.put(`${API_URL}/subjects/${currentSubjectId}`, subjectData,{
-        withCredentials: true,
-      });
+                await axios.put(`${API_URL}/subjects/${currentSubjectId}`, subjectData, {
+                    withCredentials: true,
+                });
             } else {
-                await axios.post(`${API_URL}/subjects`, subjectData,{
-        withCredentials: true,
-      });
+                await axios.post(`${API_URL}/subjects`, subjectData, {
+                    withCredentials: true,
+                });
             }
-            fetchSubjects(); // Refresh the list
-            setModalOpened(false); // Close modal
-            // Reset form
+            fetchSubjects();
+            setModalOpened(false);
+            // --- CHANGE: Reset form with uppercase 'BL' ---
             setSubjectName('');
-            setGroupName('bl');
+            setGroupName('BL');
             setSelectedCourses([]);
             setIsEditMode(false);
             setCurrentSubjectId(null);
@@ -103,7 +110,7 @@ const SubjectManagement = () => {
         setIsEditMode(true);
         setCurrentSubjectId(subject.id);
         setSubjectName(subject.subjectName);
-        setGroupName(subject.groupName);
+        setGroupName(subject.groupName.toUpperCase()); // Ensure it's uppercase
         setSelectedCourses(subject.courses.map(course => course.id.toString()));
         setModalOpened(true);
     };
@@ -111,20 +118,22 @@ const SubjectManagement = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this subject?')) {
             try {
-                await axios.delete(`${API_URL}/subjects/${id}`,{
-        withCredentials: true,
-      });
-                fetchSubjects(); // Refresh the list
+                await axios.delete(`${API_URL}/subjects/${id}`, {
+                    withCredentials: true,
+                });
+                fetchSubjects();
             } catch (error) {
                 console.error('Error deleting subject:', error);
             }
         }
     };
 
+    // --- CHANGE: Updated group labels to uppercase and added 'BE' ---
     const groupLabels = {
-        bl: 'Group BL',
-        bh: 'Group BH',
-        bm: 'Group BM'
+        BL: 'Group BL',
+        BH: 'Group BH',
+        BM: 'Group BM',
+        BE: 'Group BE'
     };
 
     return (
@@ -132,23 +141,24 @@ const SubjectManagement = () => {
             <Group position="apart" mb="xl">
                 <Title order={2}>Subject Management</Title>
                 <Button
-                            variant="light"
-                            color="blue"
-                            size="sm"
-                            leftIcon={<IconArrowLeft size={16} />}
-                            onClick={handleBack}
-                          >
-                            Back
+                    variant="light"
+                    color="blue"
+                    size="sm"
+                    leftIcon={<IconArrowLeft size={16} />}
+                    onClick={handleBack}
+                >
+                    Back
                 </Button>
                 <Button onClick={() => {
                     setIsEditMode(false);
                     setSubjectName('');
-                    setGroupName('bl');
+                    setGroupName('BL'); // --- CHANGE: Reset to uppercase 'BL' ---
                     setSelectedCourses([]);
                     setModalOpened(true);
                 }}>Map Subject</Button>
             </Group>
 
+            {/* --- CHANGE: Loop using updated uppercase groupLabels --- */}
             {Object.keys(groupLabels).map(groupKey => (
                 subjectsByGroup[groupKey] && subjectsByGroup[groupKey].length > 0 && (
                     <Box key={groupKey} mb="xl">
@@ -188,7 +198,7 @@ const SubjectManagement = () => {
                     setModalOpened(false);
                     setIsEditMode(false);
                     setSubjectName('');
-                    setGroupName('bl');
+                    setGroupName('BL'); // --- CHANGE: Reset to uppercase 'BL' ---
                     setSelectedCourses([]);
                     setCurrentSubjectId(null);
                 }}
@@ -206,10 +216,12 @@ const SubjectManagement = () => {
                     <Select
                         label="Group"
                         required
+                        // --- CHANGE: Updated Select data to uppercase ---
                         data={[
-                            { value: 'bl', label: 'BL Group' },
-                            { value: 'bh', label: 'BH Group' },
-                            { value: 'bm', label: 'BM Group' },
+                            { value: 'BL', label: 'Group BL' },
+                            { value: 'BH', label: 'Group BH' },
+                            { value: 'BM', label: 'Group BM' },
+                            { value: 'BE', label: 'Group BE' },
                         ]}
                         value={groupName}
                         onChange={setGroupName}
