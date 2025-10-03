@@ -12,9 +12,11 @@ SAP Litmos – Used in large corporations, integrates with HR tools.
 
 
 git log --oneline
-git reset --hard 78ad353    
+git reset --hard e9d1b89    
 git restore .
 git clean -fd
+
+
 
 
 Moodle A highly customizable, open-source LMS that is popular in both educational and corporate settings.

@@ -79,6 +79,9 @@ export function HeaderMegaMenu() {
             {user?.role !== 'ADMIN' && (
               <Link to="/subject" className={classes.link}>Subjects</Link>
             )}
+            {user?.role !== 'ADMIN' && (
+              <Link to="/certificates" className={classes.link}>Certificates</Link>
+            )}
           </Group>
           <Group visibleFrom="sm">
             {isLoggedIn ? (

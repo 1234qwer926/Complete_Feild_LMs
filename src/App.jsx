@@ -25,6 +25,7 @@ import GeminiChatModal from './components/GeminiChatModal';
 import SubjectManagement from './components/LmsDashboard/SubjectManagement';
 import { Subject } from './components/Course/Subject';
 import { UpdateProfilePage } from './components/LmsDashboard/UpdateProfilePage';
+import CertificatesList from './components/Course/CertificatesList';
 
 import './App.css';
 
@@ -59,6 +60,7 @@ function App() {
         <Route path="/subjectmanagement" element={<SubjectManagement />} />
         <Route path="/subject" element={<Subject />} /> 
         <Route path="/update-profile" element={<UpdateProfilePage />} />
+        <Route path="/certificates" element={<CertificatesList />} />
       </Routes>
       <FooterLinks />
       <GeminiChatModal />
