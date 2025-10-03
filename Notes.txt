@@ -164,7 +164,7 @@ Update endpoint at the jortform creation
 update the jortform elements to the each table that makes more effecient  
 
 subjectmangment:
-Each Topic should not fall in to another Subject  
+Each Topic should not fall in to another Subject  --done
 
 Coursemangment:
 update endpoint at the Coursemangment   
@@ -172,9 +172,9 @@ update endpoint at the Coursemangment
 After login Navigate to Dashboard according to the roles  --done
 Publish Result Button needed after check all the results then user will need to get the results
 
-Course Completion updation table 
+Course Completion updation table --done
 validations for each Topic
-
+  
 Store the basic userDetails in the frontend local storage   --done
 
 clear all cokkies after logout          -done
@@ -272,6 +272,30 @@ Monday:
               will have list of groupnames.
 
   One topic need not fall in multiple subjects.--done
+
+  Tuesday:
+    while creating the new DB and using it, making the login error --made changes to the frontend and the backend
+    --issue not resolved 
+    
+
+
+
+
+  UserDetails Update Functionality  -done
+  CourseCompletion table      -done
+  One Topic Shouldn't Fall in to Another Subject -done
+  Certficated Geration and get Access it from the Aws s3 storage  -done
+  Validation for Each Topic 
+  Score Publish Functionality
+  Forgot Password Functionality
+  One student should be allowed to multiple Batches
+  UserMapping Update endpoint
+  JotForm Update endpoint
+  CourseMAngment UpdateEndpoint
+
+
+
+Improvment : update the JortForm Content Table to each seperate tables for Each element.
        
 
 
