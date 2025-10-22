@@ -10,19 +10,21 @@ import {
   ActionIcon,
   Tooltip,
 } from "@mantine/core";
-import { IconPencil, IconTrash, IconArrowLeft } from "@tabler/icons-react"; // Import the back arrow icon
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { IconPencil, IconTrash, IconArrowLeft } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { JotformMapping } from "./JotformMapping";
+import { EditCourseForm } from "./EditCourseForm"; // Import the new form
 
 export function CourseManagement() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mapModalOpened, setMapModalOpened] = useState(false);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
+  const [editModalOpened, setEditModalOpened] = useState(false); // State for edit modal
   const [courseToDelete, setCourseToDelete] = useState(null);
-  
-  // Initialize the navigate function
+  const [courseToEdit, setCourseToEdit] = useState(null); // State for course to edit
+
   const navigate = useNavigate();
 
   const fetchCourses = async () => {
@@ -45,11 +47,10 @@ export function CourseManagement() {
   }, []);
 
   const handleEdit = (course) => {
-    console.log("Editing course:", course);
-    // Future logic for editing a course will go here
+    setCourseToEdit(course);
+    setEditModalOpened(true);
   };
-  
-  // Function to navigate back
+
   const handleBack = () => {
     navigate(-1);
   };
@@ -89,11 +90,10 @@ export function CourseManagement() {
       <Group justify="space-between" mb="md">
         <Title order={2}>Course Management</Title>
         <Group>
-          {/* Back button added here */}
           <Button
             variant="light"
             color="blue"
-            leftIcon={<IconArrowLeft size={16} />}
+            leftSection={<IconArrowLeft size={16} />}
             onClick={handleBack}
           >
             Back
@@ -114,6 +114,8 @@ export function CourseManagement() {
               <Table.Th>Jotform Learning</Table.Th>
               <Table.Th>Jotform Assignment</Table.Th>
               <Table.Th>Mind Map</Table.Th>
+              <Table.Th>Days Of Joining</Table.Th>
+              <Table.Th>Prerequisite</Table.Th>
               <Table.Th>Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -124,6 +126,8 @@ export function CourseManagement() {
                 <Table.Td>{course.learningJotformName || "N/A"}</Table.Td>
                 <Table.Td>{course.assignmentJotformName || "N/A"}</Table.Td>
                 <Table.Td>{course.imageFileName || "N/A"}</Table.Td>
+                <Table.Td>{course.daysOfJoining != null ? course.daysOfJoining : "N/A"}</Table.Td>
+                <Table.Td>{course.preRequisiteCourseName || "N/A"}</Table.Td>
                 <Table.Td>
                   <Group gap="xs" justify="center">
                     <Tooltip label="Edit Course">
@@ -156,6 +160,7 @@ export function CourseManagement() {
         </Text>
       )}
 
+      {/* Map Jotform Modal */}
       <Modal
         opened={mapModalOpened}
         onClose={() => setMapModalOpened(false)}
@@ -170,6 +175,24 @@ export function CourseManagement() {
         />
       </Modal>
 
+      {/* Edit Course Modal */}
+      <Modal
+        opened={editModalOpened}
+        onClose={() => setEditModalOpened(false)}
+        title={`Edit ${courseToEdit?.courseName || "Course"}`}
+        size="lg"
+      >
+        <EditCourseForm
+          course={courseToEdit}
+          onSuccess={() => {
+            setEditModalOpened(false);
+            fetchCourses();
+          }}
+          onCancel={() => setEditModalOpened(false)}
+        />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
       <Modal
         opened={deleteModalOpened}
         onClose={closeDeleteModal}

@@ -285,17 +285,29 @@ Monday:
   CourseCompletion table      -done
   One Topic Shouldn't Fall in to Another Subject -done
   Certficated Geration and get Access it from the Aws s3 storage  -done
-  Validation for Each Topic 
+  Validation for Each Topic  -done
   Score Publish Functionality
   Forgot Password Functionality
   One student should be allowed to multiple Batches
-  UserMapping Update endpoint
+  UserMapping Update endpoint -done
   JotForm Update endpoint
-  CourseMAngment UpdateEndpoint
+  CourseMAngment UpdateEndpoint -done
 
 
 
 Improvment : update the JortForm Content Table to each seperate tables for Each element.
+
+
+changes:
+
+update the content type in the architecture   -Done
+Two options in admin to be removed  --DONE
+page count in the screen   --done
+progression bar for assignment   --done 
+progression bar for learning   -done
+time per page    
+record starts in 5 4 3 2 1 --done
+
        
 
 

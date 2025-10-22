@@ -10,9 +10,10 @@ import {
   Stack,
   Text,
   TextInput,
+  NumberInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { notifications } from "@mantine/notifications"; // 1. Import notifications
+import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import classes from "../AuthenticationForm/AuthenticationForm.module.css";
 
@@ -33,7 +34,6 @@ export function JotformMapping(props) {
       setJotformNames(response.data);
     } catch (error) {
       console.error("Error fetching jotform names", error);
-      // 2. Use notification for error
       notifications.show({
         title: "Fetch Error",
         message: "Could not load Jotform names. Please try again.",
@@ -55,7 +55,6 @@ export function JotformMapping(props) {
       setCourseNames(response.data);
     } catch (error) {
       console.error("Error fetching existing courses", error);
-      // 2. Use notification for error
       notifications.show({
         title: "Fetch Error",
         message: "Could not load existing course names. Please try again.",
@@ -78,6 +77,8 @@ export function JotformMapping(props) {
       jotformName: "",
       imageFile: null,
       pdfFile: null,
+      daysOfJoining: null,
+      preRequisiteCourseName: "",
     },
     validate: {
       courseName: (val) =>
@@ -93,6 +94,13 @@ export function JotformMapping(props) {
       formData.append("jotformName", values.jotformName);
       if (values.imageFile) formData.append("imageFile", values.imageFile);
       if (values.pdfFile) formData.append("pdfFile", values.pdfFile);
+      if (values.daysOfJoining !== null && values.daysOfJoining !== '') {
+        formData.append("daysOfJoining", values.daysOfJoining);
+      }
+      if (values.preRequisiteCourseName) {
+        formData.append("preRequisiteCourseName", values.preRequisiteCourseName);
+      }
+
 
       await axios.post(
         "http://localhost:8081/api/courses/learning",
@@ -103,16 +111,14 @@ export function JotformMapping(props) {
         }
       );
       
-      // 3. Use notification for success
       notifications.show({
         title: "Success",
         message: "Learning form mapped successfully!",
         color: "green",
       });
-      props.onSuccess(); // Trigger parent refresh
+      props.onSuccess();
     } catch (error) {
       console.error("Error submitting learning form mapping", error);
-      // 2. Use notification for error
       notifications.show({
         title: "Submission Failed",
         message: "Failed to map the learning form. Please check the details and try again.",
@@ -145,16 +151,14 @@ export function JotformMapping(props) {
         }
       );
       
-      // 3. Use notification for success
       notifications.show({
         title: "Success",
         message: "Assignment form mapped successfully!",
         color: "green",
       });
-      props.onSuccess(); // Trigger parent refresh
+      props.onSuccess();
     } catch (error) {
       console.error("Error submitting assignment mapping", error);
-      // 2. Use notification for error
       notifications.show({
         title: "Submission Failed",
         message: "Failed to map the assignment form. Please ensure the course exists.",
@@ -213,6 +217,28 @@ export function JotformMapping(props) {
               {...learningForm.getInputProps("jotformName")}
               radius="md"
               disabled={loadingForms}
+            />
+
+            <NumberInput
+              label="Days of Joining (Optional)"
+              placeholder="e.g., 60"
+              min={0}
+              {...learningForm.getInputProps("daysOfJoining")}
+              radius="md"
+              allowDecimal={false}
+            />
+
+            <Select
+              label="Prerequisite Course (Optional)"
+              placeholder={
+                loadingCourses ? "Loading..." : "Select prerequisite course"
+              }
+              searchable
+              clearable
+              data={courseNames}
+              {...learningForm.getInputProps("preRequisiteCourseName")}
+              radius="md"
+              disabled={loadingCourses}
             />
 
             <FileInput

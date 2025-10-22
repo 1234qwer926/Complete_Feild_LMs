@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { Box, Button, Text, Title } from "@mantine/core";
-import { IconBook, IconClipboardList, IconArrowLeft } from "@tabler/icons-react";
+import { Box, Button, Text, Title, Divider } from "@mantine/core";
+import { IconBook, IconClipboardList, IconArrowLeft, IconClock, IconRelationManyToMany } from "@tabler/icons-react";
 import { JotformViewer } from "./JotformViewer";
 import { Assignment } from "./Assignment";
 import classes from "./CourseDetail.module.css";
-
-// --- NEW IMPORTS ---
 import { useAuth } from "../../AuthContext";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
@@ -15,10 +13,8 @@ export function CourseDetail({ course, onBack }) {
         course.learningJotformName ? "learning" : "assignment"
     );
 
-    // --- NEW: Get user from auth context ---
     const { user } = useAuth();
 
-    // --- NEW: Submission handler for learning material ---
     const handleLearningSubmit = async () => {
         if (!user) {
             notifications.show({
@@ -45,8 +41,6 @@ export function CourseDetail({ course, onBack }) {
                 message: `You have completed the learning for ${course.courseName}.`,
                 color: 'green',
             });
-
-            // Go back to the course list after successful submission
             onBack();
 
         } catch (error) {
@@ -61,7 +55,6 @@ export function CourseDetail({ course, onBack }) {
 
     return (
         <Box style={{ display: "flex", height: "100vh", backgroundColor: "#f8f9fa", margin: 0, padding: 0, overflow: "hidden" }}>
-            {/* Fixed Left Sidebar */}
             <Box style={{ flex: "0 0 300px", background: "linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%)", color: "white", padding: "24px", boxShadow: "2px 0 10px rgba(0, 0, 0, 0.1)", overflowY: "auto", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
                 <Button variant="subtle" color="gray" leftSection={<IconArrowLeft size={16} />} onClick={onBack} mb="xl" size="sm" className={classes.backButton}>
                     Back to Courses
@@ -70,6 +63,24 @@ export function CourseDetail({ course, onBack }) {
                     <Title order={3} className={classes.courseTitle}>{course.courseName}</Title>
                     <Text size="sm" className={classes.courseGroup}>Group: {course.groupName}</Text>
                 </Box>
+                
+                {/* Course Details Section */}
+                <Box mb="xl">
+                    <Divider my="sm" label="Details" labelPosition="center" style={{color: 'white'}} />
+                    {course.daysOfJoining != null && (
+                        <Box className={classes.detailItem}>
+                             <IconClock size={16} />
+                             <Text size="sm">Available in {course.daysOfJoining} days</Text>
+                        </Box>
+                    )}
+                    {course.preRequisiteCourseName && (
+                        <Box className={classes.detailItem}>
+                            <IconRelationManyToMany size={16} />
+                            <Text size="sm">Prerequisite: {course.preRequisiteCourseName}</Text>
+                        </Box>
+                    )}
+                </Box>
+                
                 <Box className={classes.navigationContainer}>
                     {course.learningJotformName && (
                         <Button variant={activeTab === "learning" ? "filled" : "subtle"} color="blue" fullWidth leftSection={<IconBook size={16} />} onClick={() => setActiveTab("learning")} mb="md" className={classes.navButton}>
@@ -84,7 +95,6 @@ export function CourseDetail({ course, onBack }) {
                 </Box>
             </Box>
 
-            {/* Main Content Area */}
             <Box style={{ flex: 1, overflowY: "auto", backgroundColor: "#f8f9fa", padding: 0, margin: 0, boxSizing: "border-box" }}>
                 <Box style={{ padding: "24px", minHeight: "100%" }}>
                     {activeTab === "learning" && course.learningJotformName && (
@@ -92,7 +102,6 @@ export function CourseDetail({ course, onBack }) {
                             jotformName={course.learningJotformName}
                             onBack={onBack}
                             hideBackButton={true}
-                            // --- PASS THE NEW SUBMIT HANDLER ---
                             onSubmit={handleLearningSubmit}
                         />
                     )}
@@ -104,4 +113,3 @@ export function CourseDetail({ course, onBack }) {
         </Box>
     );
 }
-

@@ -54,11 +54,11 @@ const FORM_ELEMENTS = [
   { type: "audio", label: "Audio", icon: IconMusic },
   { type: "video", label: "Video", icon: IconVideo },
   { type: "timer", label: "Timer", icon: IconClock },
-  { type: "orderedlist", label: "Ordered List", icon: IconListNumbers },
-  { type: "unorderedlist", label: "Unordered List", icon: IconList },
+  // { type: "orderedlist", label: "Ordered List", icon: IconListNumbers },
+  // { type: "unorderedlist", label: "Unordered List", icon: IconList },
   { type: "randominteger", label: "Random Integer", icon: IconNumbers },
   { type: "videorecording", label: "Video Recording", icon: IconVideoPlus }, // New element added
-  { type: "audiorecording", label: "Audio Recording", icon: IconMicrophone }, // New element added
+  // { type: "audiorecording", label: "Audio Recording", icon: IconMicrophone }, // New element added
 ];
 
 function Timer({ element, onTimeUpdate }) {
@@ -160,7 +160,7 @@ function getElementComponent(
         }}
       >
         <Group spacing={4}>
-          {!["videorecording", "audiorecording"].includes(element.type) && (
+          {![ "videorecording", "audiorecording"].includes(element.type) && (
             <Tooltip label="Properties" position="top">
               <ActionIcon
                 size="sm"
@@ -562,7 +562,7 @@ function PropertiesPanel({ selectedElement, onPropertyChange, onClose }) {
   }
 
   // Don't show properties panel for recording elements
-  if (["videorecording", "audiorecording"].includes(selectedElement.type)) {
+  if ([ "videorecording", "audiorecording"].includes(selectedElement.type)) {
     return (
       <Box
         style={{
@@ -826,7 +826,7 @@ function PropertiesPanel({ selectedElement, onPropertyChange, onClose }) {
             )}
 
             {/* Alignment for applicable elements */}
-            {!["breakline", "horizontalline"].includes(
+            {![ "breakline", "horizontalline"].includes(
               selectedElement.type
             ) && (
               <Box>
@@ -881,6 +881,165 @@ function PropertiesPanel({ selectedElement, onPropertyChange, onClose }) {
             </Box>
           </Stack>
         </Box>
+      </ScrollArea>
+    </Box>
+  );
+}
+
+// FIXED: PaginationNumbers Component - Corrected Ellipsis Logic
+function PaginationNumbers({ pages, currentPage, onPageChange, isPreview }) {
+  const handlePageClick = (pageIndex) => {
+    if (pageIndex !== undefined && pageIndex !== null) {
+      onPageChange(pageIndex);
+    }
+  };
+
+  if (pages.length === 0) {
+    return null;
+  }
+
+  // FIXED: Corrected ellipsis logic to prevent duplicate dots
+  const showEllipsis = pages.length > 7; // Show ellipsis if more than 7 pages
+  const maxVisiblePages = 5; // Maximum pages to show at once
+  
+  // Calculate the starting page index for the visible range
+  let startPage;
+  if (pages.length <= maxVisiblePages) {
+    // Show all pages if there are 5 or fewer
+    startPage = 0;
+  } else if (currentPage <= 2) {
+    // Show first pages when near the beginning
+    startPage = 0;
+  } else if (currentPage >= pages.length - 3) {
+    // Show last pages when near the end
+    startPage = Math.max(0, pages.length - maxVisiblePages);
+  } else {
+    // Center around current page
+    startPage = currentPage - 2;
+  }
+
+  const endPage = Math.min(startPage + maxVisiblePages - 1, pages.length - 1);
+
+  const getVisiblePages = () => {
+    const visiblePages = [];
+    
+    if (pages.length <= maxVisiblePages) {
+      // Show all pages without ellipsis
+      for (let i = 0; i < pages.length; i++) {
+        visiblePages.push(i);
+      }
+    } else {
+      // Show first page always
+      if (startPage > 0) {
+        visiblePages.push(0);
+        
+        // Add left ellipsis if there's a gap after first page
+        if (startPage > 1) {
+          visiblePages.push('ellipsis-left');
+        }
+      }
+
+      // Add the visible page range
+      for (let i = startPage; i <= endPage; i++) {
+        visiblePages.push(i);
+      }
+
+      // Show last page always if not already visible
+      if (endPage < pages.length - 1) {
+        // Add right ellipsis if there's a gap before last page
+        if (endPage < pages.length - 2) {
+          visiblePages.push('ellipsis-right');
+        }
+        
+        visiblePages.push(pages.length - 1);
+      }
+    }
+
+    return visiblePages;
+  };
+
+  const renderPageButton = (pageIndex, type = 'page') => {
+    if (type === 'ellipsis-left' || type === 'ellipsis-right') {
+      return (
+        <Text 
+          key={`${type}-${Date.now()}`} 
+          size="sm" 
+          color="dimmed" 
+          style={{ 
+            padding: '0 12px', 
+            lineHeight: '32px', 
+            fontWeight: 500,
+            minWidth: 20,
+            textAlign: 'center'
+          }}
+        >
+          ...
+        </Text>
+      );
+    }
+
+    return (
+      <Button
+        key={pageIndex}
+        size="sm"
+        variant={pageIndex === currentPage ? "filled" : "subtle"}
+        color={isPreview ? "gray" : "blue"}
+        onClick={() => handlePageClick(pageIndex)}
+        style={{
+          minWidth: 36,
+          height: 32,
+          flexShrink: 0,
+          fontWeight: 500,
+        }}
+      >
+        {pageIndex + 1}
+      </Button>
+    );
+  };
+
+  const visiblePages = getVisiblePages();
+
+  return (
+    <Box style={{ 
+      backgroundColor: 'white', // White background
+      borderRadius: 8,
+      padding: '4px 8px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      border: '1px solid #e0e0e0',
+    }}>
+      <ScrollArea 
+        style={{ 
+          width: 300,
+        }}
+        scrollbarSize={6}
+        horizontal
+        type="scroll"
+        offsetScrollbars
+        scrollHideDelay={500}
+        styles={{
+          scrollbar: {
+            '&[data-orientation="horizontal"]': {
+              height: 4,
+            },
+          },
+        }}
+      >
+        <Group 
+          justify="center"
+          spacing="xs" 
+          p="xs" 
+          style={{ 
+            minWidth: 'max-content',
+            flexWrap: 'nowrap',
+            alignItems: 'center',
+          }}
+        >
+          {visiblePages.map((pageIndex) => 
+            typeof pageIndex === 'string' 
+              ? renderPageButton(null, pageIndex)
+              : renderPageButton(pageIndex, 'page')
+          )}
+        </Group>
       </ScrollArea>
     </Box>
   );
@@ -1090,7 +1249,7 @@ export function CreateJotformBuilder() {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Add this line
+          withCredentials: true,
         }
       );
 
@@ -1125,7 +1284,7 @@ export function CreateJotformBuilder() {
         background: "#f0f0f0",
       }}
     >
-      {/* Top Navigation */}
+      {/* Top Navigation - UPDATED with Centered White Pagination */}
       <Box
         style={{
           background: "#ff6b35",
@@ -1133,9 +1292,12 @@ export function CreateJotformBuilder() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          position: "relative",
+          minHeight: 56,
         }}
       >
-        <Group>
+        {/* Left Actions */}
+        <Group spacing="md">
           <Button
             size="sm"
             variant="white"
@@ -1155,14 +1317,38 @@ export function CreateJotformBuilder() {
           </Button>
         </Group>
 
-        <Group>
-          <Text size="sm" style={{ color: "white", fontWeight: 600 }}>
-            Page {currentPage + 1} of {pages.length}
-          </Text>
-          <Button size="sm" variant="white" onClick={addPage}>
+        {/* Centered Pagination */}
+        <Box
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 10,
+          }}
+        >
+          <PaginationNumbers 
+            pages={pages} 
+            currentPage={currentPage} 
+            onPageChange={setCurrentPage}
+            isPreview={isPreview}
+          />
+        </Box>
+
+        {/* Right Action */}
+        <Box style={{ display: "flex", alignItems: "center" }}>
+          <Button 
+            size="sm" 
+            variant="white" 
+            onClick={addPage} 
+            style={{ 
+              whiteSpace: 'nowrap', 
+              flexShrink: 0,
+            }}
+          >
             + Add Page
           </Button>
-        </Group>
+        </Box>
       </Box>
 
       {/* Main Content */}
@@ -1322,7 +1508,7 @@ export function CreateJotformBuilder() {
                     </div>
                   )}
 
-                  {/* Navigation Buttons */}
+                  {/* Navigation Buttons - Keep existing back/next buttons for quick navigation */}
                   <Group
                     justify="center"
                     mt="xl"
@@ -1342,7 +1528,7 @@ export function CreateJotformBuilder() {
                     {!isLastPage ? (
                       <Button
                         size="md"
-                        style={{ background: "#007CFF" }}
+                        style={{ background: "#007CFF", color: "white" }}
                         onClick={nextPage}
                       >
                         Next
@@ -1350,7 +1536,7 @@ export function CreateJotformBuilder() {
                     ) : (
                       <Button
                         size="md"
-                        style={{ background: "#00C851" }}
+                        style={{ background: "#00C851", color: "white" }}
                         onClick={handleSubmit}
                       >
                         Submit
