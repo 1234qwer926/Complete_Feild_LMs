@@ -543,7 +543,7 @@ export function JotformViewer({ jotformName, onBack, hideBackButton = false, onS
             setPageIndex(0);
             setSubmissionStatus(null);
             try {
-                const response = await axios.get(`http://localhost:8081/api/jotforms`, {
+                const response = await axios.get(`https://java-application-pulselms.onrender.com/api/jotforms`, {
                     withCredentials: true,
                 });
 
@@ -631,7 +631,7 @@ export function JotformViewer({ jotformName, onBack, hideBackButton = false, onS
             } else {
                 // Default submission to backend
                 const response = await axios.post(
-                    `http://localhost:8081/api/jotforms/${formData.id}/submit`,
+                    `https://java-application-pulselms.onrender.com/api/jotforms/${formData.id}/submit`,
                     submissionData,
                     {
                         headers: {

@@ -1,0 +1,26 @@
+Deployment for the Spring Boot Backend
+
+docker --version
+mvn clean install
+create a file Dockerfile in main directory 
+
+            update the docker file with
+
+FROM openjdk:17-jdk-alpine
+
+WORKDIR /app
+
+COPY target/dtect-springboot-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8081
+
+CMD [ "java", "-jar", "app.jar" ]
+
+opean the docker desktop to start docker 
+
+docker build -t java-application .
+
+docker images
+
+docker run -p8081:8080 -d docker-iamgename
+

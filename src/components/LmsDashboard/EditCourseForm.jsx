@@ -36,7 +36,7 @@ export function EditCourseForm({ course, onSuccess, onCancel }) {
 
   const fetchJotforms = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/api/jotforms", {
+      const response = await axios.get("https://java-application-pulselms.onrender.com/api/jotforms", {
         withCredentials: true,
       });
       setJotforms(response.data.map((form) => form.jotformName));
@@ -47,7 +47,7 @@ export function EditCourseForm({ course, onSuccess, onCancel }) {
 
   const fetchCourseNames = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/api/courses/names", {
+      const response = await axios.get("https://java-application-pulselms.onrender.com/api/courses/names", {
         withCredentials: true,
       });
       // Filter out the current course name from prerequisites
@@ -84,7 +84,7 @@ export function EditCourseForm({ course, onSuccess, onCancel }) {
 
     try {
       await axios.put(
-        `http://localhost:8081/api/courses/${course.id}`,
+        `https://java-application-pulselms.onrender.com/api/courses/${course.id}`,
         formData,
         {
           withCredentials: true,

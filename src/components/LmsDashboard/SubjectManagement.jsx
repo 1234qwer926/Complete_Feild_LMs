@@ -20,7 +20,7 @@ import { IconTrash, IconEdit } from '@tabler/icons-react';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://localhost:8081/api';
+const API_URL = 'https://java-application-pulselms.onrender.com/api';
 
 const SubjectManagement = () => {
     const [subjectsByGroup, setSubjectsByGroup] = useState({});

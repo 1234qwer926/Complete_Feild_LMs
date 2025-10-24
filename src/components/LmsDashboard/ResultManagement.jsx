@@ -13,7 +13,7 @@ export function ResultManagement() {
     const fetchCourseResults = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8081/api/results`, {
+        const response = await axios.get(`https://java-application-pulselms.onrender.com/api/results`, {
           withCredentials: true,
         });
         setCourses(response.data);

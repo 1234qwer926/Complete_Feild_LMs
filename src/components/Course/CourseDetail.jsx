@@ -32,7 +32,7 @@ export function CourseDetail({ course, onBack }) {
         };
 
         try {
-            await axios.post('http://localhost:8081/api/completions/learning', payload, {
+            await axios.post('https://java-application-pulselms.onrender.com/api/completions/learning', payload, {
                 withCredentials: true,
             });
 

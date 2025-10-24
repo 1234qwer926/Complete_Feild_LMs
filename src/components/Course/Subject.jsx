@@ -24,8 +24,8 @@ export function Subject() {
             setError(null);
             try {
                 const [subjectsResponse, completionsResponse] = await Promise.all([
-                    axios.get('http://localhost:8081/api/subjects', { withCredentials: true }),
-                    axios.get('http://localhost:8081/api/completions/user', { withCredentials: true })
+                    axios.get('https://java-application-pulselms.onrender.com/api/subjects', { withCredentials: true }),
+                    axios.get('https://java-application-pulselms.onrender.com/api/completions/user', { withCredentials: true })
                 ]);
                 
                 const allSubjects = subjectsResponse.data[group] || [];

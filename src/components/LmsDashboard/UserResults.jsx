@@ -16,7 +16,7 @@ export function UserResults() {
       setLoading(true);
       try {
         // --- START OF UPDATE ---
-        const response = await axios.get(`http://localhost:8081/api/results/course/${courseId}`, {
+        const response = await axios.get(`https://java-application-pulselms.onrender.com/api/results/course/${courseId}`, {
           withCredentials: true,
         });
         // --- END OF UPDATE ---

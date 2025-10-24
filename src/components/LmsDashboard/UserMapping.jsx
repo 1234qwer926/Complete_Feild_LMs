@@ -34,7 +34,7 @@ export function UserMapping({ onSuccess, onClose }) {
       // --- START OF UPDATE ---
       // Switched to axios and added withCredentials
       const response = await axios.post(
-        'http://localhost:8081/api/user-mappings',
+        'https://java-application-pulselms.onrender.com/api/user-mappings',
         { email: values.email, groupName: values.group },
         { withCredentials: true }
       );

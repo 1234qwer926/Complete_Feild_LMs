@@ -30,7 +30,7 @@ export function JotformManagement() {
   const fetchJotforms = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8081/api/jotforms", {
+      const response = await axios.get("https://java-application-pulselms.onrender.com/api/jotforms", {
         withCredentials: true,
       });
       setJotforms(response.data);
@@ -65,7 +65,7 @@ export function JotformManagement() {
   const confirmDelete = async (formToDelete) => {
     try {
       await axios.delete(
-        `http://localhost:8081/api/jotforms/${formToDelete.id}`,
+        `https://java-application-pulselms.onrender.com/api/jotforms/${formToDelete.id}`,
         {
           withCredentials: true,
         }

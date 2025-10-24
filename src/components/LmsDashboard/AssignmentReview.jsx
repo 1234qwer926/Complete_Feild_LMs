@@ -25,7 +25,7 @@ export function AssignmentReview() {
       try {
         // --- UPDATED GET REQUEST ---
         const response = await axios.get(
-          `http://localhost:8081/api/results/submissions/${courseId}/${userId}`,
+          `https://java-application-pulselms.onrender.com/api/results/submissions/${courseId}/${userId}`,
           {
             withCredentials: true,
           }
@@ -73,7 +73,7 @@ export function AssignmentReview() {
     try {
       // --- UPDATED PUT REQUEST ---
       await axios.put(
-        `http://localhost:8081/api/results/answer/${id}`,
+        `https://java-application-pulselms.onrender.com/api/results/answer/${id}`,
         { finalScore: itemToSave.tempScore },
         {
           withCredentials: true,

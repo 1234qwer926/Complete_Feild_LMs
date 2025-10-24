@@ -308,6 +308,9 @@ progression bar for learning   -done
 time per page    
 record starts in 5 4 3 2 1 --done
 
+
+Validation for sets
+course completion status and score
        
 
 
