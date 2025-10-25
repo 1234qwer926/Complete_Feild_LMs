@@ -14,7 +14,9 @@ import {
   Loader,
   Image,
   Divider,
-  Progress
+  Progress,
+  Modal,
+  Text as MantineText
 } from '@mantine/core';
 import {
   IconCamera,
@@ -24,7 +26,8 @@ import {
   IconPhoto,
   IconArrowLeft,
   IconEye,
-  IconMicrophone
+  IconMicrophone,
+  IconClock
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
@@ -62,7 +65,11 @@ export function JotformAssignment() {
   const [faceDetected, setFaceDetected] = useState(false);
   const [multipleFaces, setMultipleFaces] = useState(false);
   const [lightingIssue, setLightingIssue] = useState(false);
-  const [countdown, setCountdown] = useState(null);
+
+  // Timer states
+  const [timeLeft, setTimeLeft] = useState(5 * 60); // 5 minutes per question
+  const [totalTimeLeft, setTotalTimeLeft] = useState(0); // Total exam time
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const userid = user?.email ?? '';
   const username = user?.username ?? '';
@@ -80,6 +87,8 @@ export function JotformAssignment() {
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const transcriptRef = useRef('');
+  const timerIntervalRef = useRef(null);
+  const totalTimerIntervalRef = useRef(null);
 
   useEffect(() => {
     transcriptRef.current = transcript;
@@ -97,6 +106,14 @@ export function JotformAssignment() {
     frameRate: 30
   };
 
+  // Format time in MM:SS
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Load face-api models
   useEffect(() => {
     const loadFaceModels = async () => {
       try {
@@ -119,9 +136,12 @@ export function JotformAssignment() {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      clearInterval(timerIntervalRef.current);
+      clearInterval(totalTimerIntervalRef.current);
     };
   }, []);
 
+  // Face detection loop
   useEffect(() => {
     if (modelsLoaded && step === 'exam') {
       const detectFaces = async () => {
@@ -166,7 +186,7 @@ export function JotformAssignment() {
       const interval = setInterval(detectFaces, 2000);
       return () => clearInterval(interval);
     }
-  }, [modelsLoaded, step, lightingIssue]);
+  }, [modelsLoaded, step]);
 
   const checkBrightness = async (video) => {
     const canvas = document.createElement('canvas');
@@ -257,6 +277,11 @@ export function JotformAssignment() {
 
           setProcessedPages(processedPagesData);
           setCurrentPageIndex(0);
+
+          // Initialize total exam time
+          const totalExamTime = processedPagesData.length * 5 * 60; // 5 min per question
+          setTotalTimeLeft(totalExamTime);
+
           setJotformContent({
             title: foundForm.title || `Assignment - ${courseName}`,
             pages: processedPagesData,
@@ -276,6 +301,7 @@ export function JotformAssignment() {
     }
   };
 
+  // Start recording
   const startRecording = async () => {
     if (streamRef.current && !currentRecording) {
       try {
@@ -334,23 +360,61 @@ export function JotformAssignment() {
     }
   };
 
+  // Timer logic for current question
   useEffect(() => {
-    if (step === 'exam' && processedPages.length > 0 && !currentRecording && countdown === null) {
-      setCountdown(5); // Start countdown from 5
-    }
-  }, [step, currentPageIndex, processedPages, countdown]);
+    if (step === 'exam' && processedPages.length > 0) {
+      setTimeLeft(5 * 60); // Reset per question
 
-  useEffect(() => {
-    if (countdown !== null && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
+      timerIntervalRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timerIntervalRef.current);
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0) {
-      startRecording();
-      setCountdown(null);
+
+      return () => clearInterval(timerIntervalRef.current);
     }
-  }, [countdown]);
+  }, [currentPageIndex, step, processedPages.length]);
+
+  // Total exam timer
+  useEffect(() => {
+    if (step === 'exam' && totalTimeLeft > 0) {
+      totalTimerIntervalRef.current = setInterval(() => {
+        setTotalTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(totalTimerIntervalRef.current);
+            handleTotalTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(totalTimerIntervalRef.current);
+    }
+  }, [step, totalTimeLeft]);
+
+  const handleTimeUp = () => {
+    if (currentRecording) {
+      stopRecording();
+    }
+
+    const isLastPage = currentPageIndex === processedPages.length - 1;
+    if (isLastPage) {
+      submitAssignment();
+    } else {
+      handleNextPage();
+    }
+  };
+
+  const handleTotalTimeUp = () => {
+    if (currentRecording) stopRecording();
+    submitAssignment();
+  };
 
   const handleNextPage = () => {
     if (currentPageIndex < processedPages.length - 1) {
@@ -358,7 +422,6 @@ export function JotformAssignment() {
         stopRecording();
       }
       setCurrentPageIndex(currentPageIndex + 1);
-      setCountdown(5); // Restart countdown for the next page
     }
   };
 
@@ -397,6 +460,9 @@ export function JotformAssignment() {
   };
 
   const submitAssignment = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     try {
       const submissionDto = {
         jotformId: jotformId,
@@ -422,24 +488,20 @@ export function JotformAssignment() {
       });
 
       const endpoint = 'https://java-application-pulselms.onrender.com/api/assignment/submit-answer';
-      console.log('Submitting to endpoint:', endpoint);
-      console.log('Submission DTO:', submissionDto);
-      console.log('Photo included:', !!capturedPhoto);
-      console.log('Number of videos:', recordedAnswers.length);
-
       const response = await axios.post(endpoint, formData, {
         withCredentials: true,
       });
 
-      console.log('Submission response:', response.data);
       setStep('completed');
     } catch (error) {
-      console.error('❌ SUBMISSION ERROR:', error.response ? error.response.data : error.message);
+      console.error('SUBMISSION ERROR:', error.response ? error.response.data : error.message);
       notifications.show({
         title: 'Submission Failed',
         message: error.response ? `Server Error: ${error.response.statusText}` : 'An unexpected error occurred.',
         color: 'red'
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -447,6 +509,7 @@ export function JotformAssignment() {
     if (window.confirm('Exit assignment? Progress will be lost.')) navigate(-1);
   };
 
+  // Render setup, photo, verification steps (unchanged)
   if (step === 'setup') {
     return (
       <Container size="md" py="xl">
@@ -540,6 +603,7 @@ export function JotformAssignment() {
     );
   }
 
+  // Exam Step with Timer
   if (step === 'exam') {
     if (!browserSupportsSpeechRecognition) {
       return <Container size="md" py="xl"><Alert color="red">Speech recognition not supported. Please use Chrome.</Alert></Container>;
@@ -553,6 +617,7 @@ export function JotformAssignment() {
     if (!processedPages.length) {
       return <Container size="md" py="xl"><Center><Text>No pages to display.</Text></Center></Container>;
     }
+
     const currentPage = processedPages[currentPageIndex];
     const isLastPage = currentPageIndex === processedPages.length - 1;
     const progressPercentage = Math.round(((currentPageIndex + 1) / processedPages.length) * 100);
@@ -560,6 +625,8 @@ export function JotformAssignment() {
     return (
       <Box>
         <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+
+        {/* Top Bar */}
         <Box style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#1a1a1a', color: 'white', padding: '8px 16px', zIndex: 1001, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Group>
             <Badge color="red" variant="dot">MONITORING</Badge>
@@ -571,33 +638,56 @@ export function JotformAssignment() {
             {!fullscreen && <Button size="xs" onClick={enterFullscreen}>Go Fullscreen</Button>}
           </Group>
         </Box>
+
+        {/* Total Exam Timer - Top Right */}
+        <Box style={{ position: 'fixed', top: 60, right: 20, background: '#ff4757', color: 'white', padding: '8px 16px', borderRadius: 8, zIndex: 1002, fontWeight: 'bold', fontSize: '18px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          <Group gap={8}>
+            <IconClock size={20} />
+            <Text>{formatTime(totalTimeLeft)}</Text>
+          </Group>
+        </Box>
+
+        {/* Live Video Feed */}
         {showLiveVideo && (
-          <Box style={{ position: 'fixed', top: 60, right: 20, width: 220, height: 165, zIndex: 1000, border: `3px solid ${faceDetected ? '#51cf66' : '#ff6b6b'}`, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
+          <Box style={{ position: 'fixed', top: 120, right: 20, width: 220, height: 165, zIndex: 1000, border: `3px solid ${faceDetected ? '#51cf66' : '#ff6b6b'}`, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
             <Webcam audio={false} ref={liveVideoRef} mirrored muted videoConstraints={liveVideoConstraints} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <canvas ref={faceCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
             <Box style={{ position: 'absolute', top: 8, left: 8, background: '#ff4757', color: 'white', padding: '4px 8px', borderRadius: 4, fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: 'white', borderRadius: '50%', animation: 'pulse 2s infinite' }}></div>LIVE</Box>
             {currentRecording && <Box style={{ position: 'absolute', top: 8, right: 8, background: '#ff4757', color: 'white', padding: '4px 8px', borderRadius: 4, fontSize: '11px' }}>REC {Math.floor((Date.now() - currentRecording.startTime) / 1000)}s</Box>}
           </Box>
         )}
+
+        {/* Hidden webcam for recording */}
         <Box style={{ position: 'fixed', top: -1000, left: -1000 }}><Webcam audio muted ref={webcamRef} onUserMedia={handleUserMedia} videoConstraints={videoConstraints} /></Box>
+
         <Container size="xl" py="md" pt={60} style={{ paddingRight: showLiveVideo ? 260 : 20 }}>
           <Title order={3} mb="md" ta="center">Assignment: {jotformContent.title}</Title>
+
+          {/* Question Timer */}
+          <Card shadow="sm" p="xs" radius="md" mb="lg" style={{ background: timeLeft <= 60 ? '#fff5f5' : '#f8f9fa' }}>
+            <Group justify="center">
+              <IconClock size={18} color={timeLeft <= 60 ? 'red' : 'blue'} />
+              <Text size="lg" weight={700} color={timeLeft <= 60 ? 'red' : 'blue'}>
+                Time Remaining: {formatTime(timeLeft)}
+              </Text>
+            </Group>
+          </Card>
+
           <Card shadow="sm" p="sm" radius="md" mb="lg">
             <Group justify="space-between" mb="xs"><Text size="sm" weight={500}>Progress</Text><Text size="sm" color="dimmed">{progressPercentage}%</Text></Group>
             <Progress value={progressPercentage} color="blue" label={`${progressPercentage}%`} />
           </Card>
+
           <Card shadow="lg" p="xl" radius="md" mb="lg">
-            <Group justify="space-between" mb="md"><Title order={4}>Page {currentPage.pageNumber}</Title><Badge color="blue" size="lg">Q{randomNumber}/{currentPage.totalParagraphs}</Badge></Group>
+            <Group justify="space-between" mb="md">
+              <Title order={4}>Page {currentPage.pageNumber}</Title>
+              <Badge color="blue" size="lg">Q{randomNumber}/{currentPage.totalParagraphs}</Badge>
+            </Group>
             {currentPage.selectedParagraph ? <Text size="lg" mb="md" style={{ lineHeight: 1.8 }}>{currentPage.selectedParagraph.content}</Text> : <Alert color="orange">No question available.</Alert>}
             {currentPage.hasVideoRecording && (
               <Box>
                 <Divider my="lg" />
                 <Text weight={600} size="md" mb="md">Recording your answer:</Text>
-                {countdown !== null && (
-                  <Box p="xl" style={{ textAlign: 'center', background: '#f8f9fa', borderRadius: 12 }}>
-                    <Text size="xl" weight={700} color="blue">Recording starts in {countdown}</Text>
-                  </Box>
-                )}
                 <Box p="xl" style={{ border: '2px dashed #dee2e6', borderRadius: 12, textAlign: 'center', background: '#f8f9fa' }}>
                   <IconVideo size={56} color="#868e96" style={{ marginBottom: 16 }} />
                   {recordedAnswers.some(a => a.pageNumber === currentPageIndex + 1) && <Badge color="green" size="lg"><IconCheck size={14} /> Answer Recorded</Badge>}
@@ -610,17 +700,32 @@ export function JotformAssignment() {
                 )}
                 <Center mt="xl">
                   {currentRecording && <Button onClick={stopRecording} color="green" size="xl">Stop Recording ({Math.floor((Date.now() - currentRecording.startTime) / 1000)}s)</Button>}
+                  {!currentRecording && !recordedAnswers.some(a => a.pageNumber === currentPageIndex + 1) && timeLeft > 0 && (
+                    <Button onClick={startRecording} color="blue" size="xl" leftSection={<IconVideo size={20} />}>Start Recording</Button>
+                  )}
                 </Center>
               </Box>
             )}
           </Card>
+
           <Card shadow="sm" p="lg" radius="md" style={{ background: '#f8f9fa' }}>
             <Group justify="space-between">
               <Text size="sm" color="dimmed">Page {currentPageIndex + 1} of {processedPages.length}</Text>
-              {!isLastPage ? <Button onClick={handleNextPage} size="lg" color="blue">Next Page</Button> : <Button onClick={submitAssignment} size="lg" color="green">Submit Assignment</Button>}
+              {!isLastPage ? <Button onClick={handleNextPage} size="lg" color="blue">Next Page</Button> : <Button onClick={submitAssignment} size="lg" color="green" disabled={isSubmitting}>Submit Assignment</Button>}
             </Group>
           </Card>
         </Container>
+
+        {/* Submitting Modal */}
+        <Modal opened={isSubmitting} withCloseButton={false} centered size="sm" onClose={() => {}}>
+          <Center py="xl">
+            <Stack align="center">
+              <Loader size="xl" />
+              <MantineText size="lg" weight={600}>Submitting Assignment...</MantineText>
+              <MantineText size="sm" color="dimmed">Please wait while we upload your answers.</MantineText>
+            </Stack>
+          </Center>
+        </Modal>
       </Box>
     );
   }
