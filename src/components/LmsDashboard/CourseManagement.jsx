@@ -30,7 +30,7 @@ export function CourseManagement() {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`https://java-application-pulselms.onrender.com/api/courses`, {
+      const response = await axios.get(`http://localhost:8081/api/courses`, {
         withCredentials: true,
       });
       setCourses(response.data);
@@ -70,7 +70,7 @@ export function CourseManagement() {
 
     try {
       await axios.delete(
-        `https://java-application-pulselms.onrender.com/api/courses/${courseToDelete.id}`,
+        `http://localhost:8081/api/courses/${courseToDelete.id}`,
         {
           withCredentials: true,
         }

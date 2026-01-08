@@ -25,7 +25,7 @@ export function UpdateProfilePage() {
 
     const handleUpdate = async (values) => {
         try {
-            const response = await axios.put('https://java-application-pulselms.onrender.com/api/auth/profile', values, {
+            const response = await axios.put('http://localhost:8081/api/auth/profile', values, {
                 withCredentials: true,
             });
             

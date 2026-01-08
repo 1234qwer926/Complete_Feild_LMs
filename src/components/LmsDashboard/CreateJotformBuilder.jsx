@@ -1243,7 +1243,7 @@ export function CreateJotformBuilder() {
     try {
       console.log(fullData);
       const response = await axios.post(
-        "https://java-application-pulselms.onrender.com/api/jotforms",
+        "http://localhost:8081/api/jotforms",
         fullData,
         {
           headers: {

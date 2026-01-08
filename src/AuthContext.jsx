@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
     const logout = async () => {
         try {
             // Call the backend to invalidate the server-side session/cookie.
-            await axios.post('https://java-application-pulselms.onrender.com/api/auth/logout', {}, { withCredentials: true });
+            await axios.post('http://localhost:8081/api/auth/logout', {}, { withCredentials: true });
         } catch (error) {
             console.error("Logout API call failed, proceeding with client-side logout.", error);
         } finally {

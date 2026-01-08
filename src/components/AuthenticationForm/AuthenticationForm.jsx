@@ -29,7 +29,7 @@ export function AuthenticationForm(props) {
         setError(null);
         setSuccess(null); // Clear previous messages
         
-        const endpoint = `https://java-application-pulselms.onrender.com/api/auth/${type}`;
+        const endpoint = `http://localhost:8081/api/auth/${type}`;
         const payload = type === 'register' 
             ? { username: values.username, email: values.email, password: values.password } 
             : { username: values.username, password: values.password };
@@ -46,7 +46,7 @@ export function AuthenticationForm(props) {
             } else {
                 // --- LOGIN FLOW (Original Logic) ---
                 await axios.post(endpoint, payload, { withCredentials: true });
-                const userDetailsEndpoint = `https://java-application-pulselms.onrender.com/api/auth/${values.username}`;
+                const userDetailsEndpoint = `http://localhost:8081/api/auth/${values.username}`;
                 const userDetailsResponse = await axios.get(userDetailsEndpoint, { withCredentials: true });
                 
                 const userData = userDetailsResponse.data;

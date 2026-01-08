@@ -27,7 +27,7 @@ export function UserManagement() {
     setLoading(true);
     try {
       const response = await axios.get(
-        " https://java-application-pulselms.onrender.com/api/user-mappings",
+        " http://localhost:8081/api/user-mappings",
         {
           withCredentials: true,
         }
@@ -57,7 +57,7 @@ export function UserManagement() {
   const confirmDelete = async (userToDelete) => {
     try {
       await axios.delete(
-        ` https://java-application-pulselms.onrender.com/api/user-mappings/${userToDelete.id}`,
+        ` http://localhost:8081/api/user-mappings/${userToDelete.id}`,
         {
           withCredentials: true,
         }

@@ -18,7 +18,7 @@ const CertificatesList = () => {
         setError(null);
 
         const response = await axios.get(
-          `https://java-application-pulselms.onrender.com/api/certificates/${user.username}`,
+          `http://localhost:8081/api/certificates/${user.username}`,
           { withCredentials: true }
         );
 

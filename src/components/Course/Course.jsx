@@ -17,7 +17,7 @@ export function Course() {
       try {
         // --- START OF CHANGE ---
         // Make the GET request with the withCredentials option
-        const response = await axios.get('https://java-application-pulselms.onrender.com/api/courses', {
+        const response = await axios.get('http://localhost:8081/api/courses', {
           withCredentials: true,
         });
         // --- END OF CHANGE ---

@@ -236,7 +236,7 @@ export function JotformAssignment() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`https://java-application-pulselms.onrender.com/api/jotforms`, {
+      const response = await axios.get(`http://localhost:8081/api/jotforms`, {
         withCredentials: true
       });
       const foundForm = response.data.find(form => form.jotformName === jotformId);
@@ -487,7 +487,7 @@ export function JotformAssignment() {
         formData.append('videos', answer.blob, `answer-video-${index + 1}.webm`);
       });
 
-      const endpoint = 'https://java-application-pulselms.onrender.com/api/assignment/submit-answer';
+      const endpoint = 'http://localhost:8081/api/assignment/submit-answer';
       const response = await axios.post(endpoint, formData, {
         withCredentials: true,
       });
